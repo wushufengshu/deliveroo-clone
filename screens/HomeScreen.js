@@ -1,6 +1,6 @@
 import { View, Text, Image, TextInput, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import {
     UserIcon,
@@ -10,15 +10,35 @@ import {
 } from "react-native-heroicons/outline";
 import Categories from '../components/Categories';
 import FeaturedRow from '../components/FeaturedRow';
+import client from '../sanity';
+import 'react-native-url-polyfill/auto';
 
 const HomeScreen = () => {
     const navigation = useNavigation();
+    const [featuredCategories, setFeaturedCategories] = useState([])
 
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false
         })
     }, [])
+
+    useEffect(() => {
+        client.fetch(`
+        *[_type == 'featured'] {
+            ...,
+            restaurants[]->{
+              ...,
+              dishes[]->,
+                type-> {
+                  name 
+                }
+            }
+        }`).then(data => {
+            setFeaturedCategories(data)
+        })
+    }, [])
+    console.log(featuredCategories)
 
     return (
         <SafeAreaView className="bg-white pt-5">
@@ -32,7 +52,7 @@ const HomeScreen = () => {
                 />
                 <View className="flex-1">
                     <Text className=' font-bold text-gray-400 text-xs  '>Deliver Now!</Text>
-                    <Text className='font-bold text-xl'>Current Locationq
+                    <Text className='font-bold text-xl'>Current Location
                         <ChevronDownIcon size={20} color="#00CCBB" />
                     </Text>
                 </View>
@@ -49,28 +69,19 @@ const HomeScreen = () => {
             </View>
 
             {/* Body */}
-            <ScrollView className="bg-slate-50">
+            <ScrollView className="bg-slate-50 h-auto overflow-scroll ">
                 {/* Categories */}
                 <Categories />
                 {/* Featured */}
-                <FeaturedRow
-                    id="testing1"
-                    title="Featured"
-                    description="Paid placement from our partners"
-                />
-                <FeaturedRow
-                    id="testing1"
-                    title="Featured"
-                    description="Paid placement from our partners"
-                />
+                {featuredCategories?.map(category => (
 
-                <FeaturedRow
-                    id="testing1"
-                    title="Featured"
-                    description="Paid placement from our partners"
-                />
-
-
+                    <FeaturedRow
+                        id={category._id}
+                        title={category.name}
+                        description={category.short_description}
+                        key={category._id}
+                    />
+                ))}
             </ScrollView>
         </SafeAreaView>
     )
