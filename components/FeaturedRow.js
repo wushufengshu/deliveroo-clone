@@ -26,7 +26,7 @@ const FeaturedRow = ({ id, title, description }) => {
     }, [id])
     console.log(restaurants)
     return (
-        <SafeAreaView>
+        <SafeAreaView className="pb-36">
             <View className="mt-4 flex-row justify-between items-center px-4" >
                 <Text className="font-bold text-lg">{title}</Text>
                 <ArrowRightIcon color="#00CCBB" />
